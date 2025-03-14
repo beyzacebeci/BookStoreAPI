@@ -12,7 +12,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.HasMany(c => c.Books)
             .WithOne(b => b.Category)
             .HasForeignKey(b => b.CategoryId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasData(
             new Category { Id = 1, Name = "Roman" },

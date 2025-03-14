@@ -14,8 +14,8 @@ public class BookRepository : GenericRepository<Book>, IBookRepository
     {
         return await _context.Books
             .Where(b => b.CategoryId == categoryId)
-            .Include(b => b.Category)  // Category bilgisini de getir
-            .AsNoTracking()           // Performans için
+            .Include(b => b.Category)
+            .AsNoTracking()      
             .ToListAsync();
     }
 }

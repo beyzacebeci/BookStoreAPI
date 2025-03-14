@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace App.Services.Books;
 
-namespace App.Services.Books
+public interface IBookService
 {
-    public interface IBookService
-    {
-    }
+    Task<ServiceResult<List<BookDto>>> GetAllListAsync();
+    Task<ServiceResult<BookDto?>> GetByIdAsync(int id);
+    Task<ServiceResult<CreateBookResponseDto>> CreateAsync(CreateBookRequestDto requestDto);
+    Task<ServiceResult> UpdateAsync(int id, UpdateBookRequestDto requestDto);
+    Task<ServiceResult> DeleteAsync(int id);
+
 }
+

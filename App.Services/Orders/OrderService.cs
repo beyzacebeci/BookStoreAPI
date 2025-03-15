@@ -120,4 +120,50 @@ public class OrderService : IOrderService
             OrderDate = order.OrderDate
         });
     }
+
+    public async Task<ServiceResult> UpdateStatusAsync(int id, UpdateOrderStatusRequestDto requestDto)
+    {
+        var order = await _orderRepository.GetByIdAsync(id);
+
+        if (order is null)
+        {
+            return ServiceResult.Fail("Sipariş bulunamadı.", HttpStatusCode.NotFound);
+        }
+
+        // Status string'ini enum'a çevirme
+        if (!Enum.TryParse<Order.OrderStatus>(requestDto.Status, true, out var newStatus))
+        {
+            return ServiceResult.Fail(
+                "Geçersiz sipariş durumu. Geçerli değerler: PENDING, COMPLETED, CANCELLED",
+                HttpStatusCode.BadRequest);
+        }
+
+        // COMPLETED siparişler için güncelleme yapılamaz
+        if (order.Status == Order.OrderStatus.COMPLETED)
+        {
+            return ServiceResult.Fail(
+                "Tamamlanmış siparişlerin durumu değiştirilemez.",
+                HttpStatusCode.BadRequest);
+        }
+
+        // Sipariş iptal ediliyorsa stok miktarını geri ekle
+        if (newStatus == Order.OrderStatus.CANCELLED && order.Status != Order.OrderStatus.CANCELLED)
+        {
+            var orderItems = await _orderRepository.GetOrderWithDetailsAsync(id);
+            foreach (var item in orderItems!.OrderItems)
+            {
+                var book = await _bookRepository.GetByIdAsync(item.BookId);
+                if (book != null)
+                {
+                    book.StockQuantity += item.Quantity;
+                    _bookRepository.Update(book);
+                }
+            }
+        }
+
+        order.Status = newStatus;
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Success();
+    }
 }

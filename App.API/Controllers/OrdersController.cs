@@ -33,5 +33,15 @@ public class OrdersController : ControllerBase
             StatusCode = createResult.HttpStatusCode.GetHashCode()
         };
     }
+
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateOrderStatusRequestDto requestDto)
+    {
+        var result = await _orderService.UpdateStatusAsync(id, requestDto);
+        return new ObjectResult(result)
+        {
+            StatusCode = result.HttpStatusCode.GetHashCode()
+        };
+    }
 }
 

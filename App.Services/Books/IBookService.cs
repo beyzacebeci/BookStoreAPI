@@ -7,6 +7,6 @@ public interface IBookService
     Task<ServiceResult<CreateBookResponseDto>> CreateAsync(CreateBookRequestDto requestDto);
     Task<ServiceResult> UpdateAsync(int id, UpdateBookRequestDto requestDto);
     Task<ServiceResult> DeleteAsync(int id);
-
+    Task<ServiceResult<List<BookDto>>> SearchByTitleAsync(string title);
 }
 

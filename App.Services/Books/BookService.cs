@@ -10,7 +10,7 @@ public class BookService : IBookService
     private readonly IBookRepository _bookRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public BookService(IBookRepository bookRepository,IUnitOfWork unitOfWork)
+    public BookService(IBookRepository bookRepository, IUnitOfWork unitOfWork)
     {
         _bookRepository = bookRepository;
         _unitOfWork = unitOfWork;
@@ -39,11 +39,11 @@ public class BookService : IBookService
 
     public async Task<ServiceResult<BookDto?>> GetByIdAsync(int id)
     {
-        var book =await _bookRepository.GetByIdAsync(id);
+        var book = await _bookRepository.GetByIdAsync(id);
 
-        if(book is null)
+        if (book is null)
         {
-            ServiceResult<BookDto>.Fail("Book is not found.",HttpStatusCode.NotFound);    
+            ServiceResult<BookDto>.Fail("Book is not found.", HttpStatusCode.NotFound);
         }
 
         var bookDto = new BookDto
@@ -58,7 +58,7 @@ public class BookService : IBookService
             PublicationYear = book.PublicationYear
         };
 
-        return ServiceResult<BookDto>.Success(bookDto)!;  
+        return ServiceResult<BookDto>.Success(bookDto)!;
     }
     public async Task<ServiceResult<CreateBookResponseDto>> CreateAsync(CreateBookRequestDto requestDto)
     {
@@ -79,7 +79,7 @@ public class BookService : IBookService
             ISBN = requestDto.ISBN,
             Price = requestDto.Price,
             StockQuantity = requestDto.StockQuantity,
-            PublicationYear= requestDto.PublicationYear
+            PublicationYear = requestDto.PublicationYear
         };
         await _bookRepository.AddAsync(book);
         await _unitOfWork.SaveChangesAsync();
@@ -91,11 +91,11 @@ public class BookService : IBookService
     {
         var book = await _bookRepository.GetByIdAsync(id);
 
-        if(book is null)
+        if (book is null)
         {
             return ServiceResult.Fail("Book not found.", HttpStatusCode.NotFound);
         }
-       
+
         book.CategoryId = requestDto.CategoryId;
         book.Title = requestDto.Title;
         book.Author = requestDto.Author;
@@ -118,6 +118,39 @@ public class BookService : IBookService
         _bookRepository.Delete(book);
         await _unitOfWork.SaveChangesAsync();
         return ServiceResult.Success();
+    }
+
+    public async Task<ServiceResult<List<BookDto>>> SearchByTitleAsync(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return ServiceResult<List<BookDto>>.Fail(
+                "Arama metni boş olamaz.",
+                HttpStatusCode.BadRequest);
+        }
+
+        var books = await _bookRepository.SearchByTitleAsync(title);
+
+        if (!books.Any())
+        {
+            return ServiceResult<List<BookDto>>.Success(
+                new List<BookDto>(),
+                HttpStatusCode.NoContent);
+        }
+
+        var bookDtos = books.Select(book => new BookDto
+        {
+            Id = book.Id,
+            CategoryId = book.CategoryId,
+            Title = book.Title,
+            Author = book.Author,
+            ISBN = book.ISBN,
+            Price = book.Price,
+            StockQuantity = book.StockQuantity,
+            PublicationYear = book.PublicationYear
+        }).ToList();
+
+        return ServiceResult<List<BookDto>>.Success(bookDtos);
     }
 
 

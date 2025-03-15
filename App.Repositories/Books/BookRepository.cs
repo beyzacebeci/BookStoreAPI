@@ -15,7 +15,16 @@ public class BookRepository : GenericRepository<Book>, IBookRepository
         return await _context.Books
             .Where(b => b.CategoryId == categoryId)
             .Include(b => b.Category)
-            .AsNoTracking()      
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<List<Book>> SearchByTitleAsync(string title)
+    {
+        return await _context.Books
+            .Where(b => b.Title.ToLower().Contains(title.ToLower()))
+            .Include(b => b.Category)
+            .AsNoTracking()
             .ToListAsync();
     }
 }

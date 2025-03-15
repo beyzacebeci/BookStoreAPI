@@ -78,5 +78,15 @@ public class BooksController : ControllerBase
             StatusCode = deleteResult.HttpStatusCode.GetHashCode()
         };
     }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchByTitle([FromQuery] string title)
+    {
+        var booksResult = await _bookService.SearchByTitleAsync(title);
+        return new ObjectResult(booksResult)
+        {
+            StatusCode = booksResult.HttpStatusCode.GetHashCode()
+        };
+    }
 }
 

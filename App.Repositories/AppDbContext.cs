@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Book> Books { get; set; } = default!;
     public DbSet<Category> Categories { get; set; } = default!;
     public DbSet<Order> Orders { get; set; } = default!;
+    public DbSet<OrderItem> OrderItems { get; set; } = default!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

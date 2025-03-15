@@ -62,9 +62,6 @@ namespace App.Repositories.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("ISBN")
-                        .IsUnique();
-
                     b.ToTable("Books");
 
                     b.HasData(
@@ -146,11 +143,11 @@ namespace App.Repositories.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BookId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -161,6 +158,8 @@ namespace App.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BookId");
+
                     b.ToTable("Orders");
 
                     b.HasData(
@@ -168,7 +167,6 @@ namespace App.Repositories.Migrations
                         {
                             Id = 1,
                             OrderDate = new DateTime(2024, 3, 15, 10, 30, 0, 0, DateTimeKind.Utc),
-                            Quantity = 2,
                             Status = "COMPLETED",
                             TotalPrice = 99.98m
                         },
@@ -176,7 +174,6 @@ namespace App.Repositories.Migrations
                         {
                             Id = 2,
                             OrderDate = new DateTime(2024, 3, 16, 14, 45, 0, 0, DateTimeKind.Utc),
-                            Quantity = 1,
                             Status = "PENDING",
                             TotalPrice = 59.99m
                         },
@@ -184,51 +181,63 @@ namespace App.Repositories.Migrations
                         {
                             Id = 3,
                             OrderDate = new DateTime(2024, 3, 17, 9, 15, 0, 0, DateTimeKind.Utc),
-                            Quantity = 3,
                             Status = "COMPLETED",
                             TotalPrice = 209.97m
                         });
                 });
 
-            modelBuilder.Entity("BookOrder", b =>
+            modelBuilder.Entity("App.Repositories.Orders.OrderItem", b =>
                 {
-                    b.Property<int>("BooksId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    b.Property<int>("OrdersId")
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookId")
                         .HasColumnType("integer");
 
-                    b.HasKey("BooksId", "OrdersId");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("OrdersId");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
 
-                    b.ToTable("BookOrder");
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.HasIndex("OrderId", "BookId");
+
+                    b.ToTable("OrderItems");
 
                     b.HasData(
                         new
                         {
-                            BooksId = 1,
-                            OrdersId = 1
+                            Id = 1,
+                            BookId = 1,
+                            OrderId = 1,
+                            Quantity = 2,
+                            UnitPrice = 49.99m
                         },
                         new
                         {
-                            BooksId = 2,
-                            OrdersId = 1
+                            Id = 2,
+                            BookId = 2,
+                            OrderId = 2,
+                            Quantity = 1,
+                            UnitPrice = 59.99m
                         },
                         new
                         {
-                            BooksId = 2,
-                            OrdersId = 2
-                        },
-                        new
-                        {
-                            BooksId = 1,
-                            OrdersId = 3
-                        },
-                        new
-                        {
-                            BooksId = 3,
-                            OrdersId = 3
+                            Id = 3,
+                            BookId = 3,
+                            OrderId = 3,
+                            Quantity = 3,
+                            UnitPrice = 69.99m
                         });
                 });
 
@@ -237,30 +246,51 @@ namespace App.Repositories.Migrations
                     b.HasOne("App.Repositories.Categories.Category", "Category")
                         .WithMany("Books")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("BookOrder", b =>
+            modelBuilder.Entity("App.Repositories.Orders.Order", b =>
                 {
                     b.HasOne("App.Repositories.Books.Book", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("BookId");
+                });
+
+            modelBuilder.Entity("App.Repositories.Orders.OrderItem", b =>
+                {
+                    b.HasOne("App.Repositories.Books.Book", "Book")
                         .WithMany()
-                        .HasForeignKey("BooksId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("App.Repositories.Orders.Order", null)
-                        .WithMany()
-                        .HasForeignKey("OrdersId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("App.Repositories.Orders.Order", "Order")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("App.Repositories.Books.Book", b =>
+                {
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("App.Repositories.Categories.Category", b =>
                 {
                     b.Navigation("Books");
+                });
+
+            modelBuilder.Entity("App.Repositories.Orders.Order", b =>
+                {
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

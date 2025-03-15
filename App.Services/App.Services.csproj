@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\App.Repositories\App.Repositories.csproj" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Orders\" />
+    <ProjectReference Include="..\App.Repositories\App.Repositories.csproj" />
   </ItemGroup>
 
 </Project>

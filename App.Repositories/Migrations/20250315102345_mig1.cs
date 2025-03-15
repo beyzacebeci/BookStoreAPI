@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace App.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class mig1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,22 +25,6 @@ namespace App.Repositories.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Orders",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Quantity = table.Column<int>(type: "integer", nullable: false),
-                    TotalPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    OrderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -65,31 +49,56 @@ namespace App.Repositories.Migrations
                         column: x => x.CategoryId,
                         principalTable: "Categories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "BookOrder",
+                name: "Orders",
                 columns: table => new
                 {
-                    BooksId = table.Column<int>(type: "integer", nullable: false),
-                    OrdersId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OrderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    BookId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BookOrder", x => new { x.BooksId, x.OrdersId });
+                    table.PrimaryKey("PK_Orders", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BookOrder_Books_BooksId",
-                        column: x => x.BooksId,
+                        name: "FK_Orders_Books_BookId",
+                        column: x => x.BookId,
+                        principalTable: "Books",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrderItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    OrderId = table.Column<int>(type: "integer", nullable: false),
+                    BookId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderItems_Books_BookId",
+                        column: x => x.BookId,
                         principalTable: "Books",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_BookOrder_Orders_OrdersId",
-                        column: x => x.OrdersId,
+                        name: "FK_OrderItems_Orders_OrderId",
+                        column: x => x.OrderId,
                         principalTable: "Orders",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.InsertData(
@@ -104,12 +113,12 @@ namespace App.Repositories.Migrations
 
             migrationBuilder.InsertData(
                 table: "Orders",
-                columns: new[] { "Id", "OrderDate", "Quantity", "Status", "TotalPrice" },
+                columns: new[] { "Id", "BookId", "OrderDate", "Status", "TotalPrice" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2024, 3, 15, 10, 30, 0, 0, DateTimeKind.Utc), 2, "COMPLETED", 99.98m },
-                    { 2, new DateTime(2024, 3, 16, 14, 45, 0, 0, DateTimeKind.Utc), 1, "PENDING", 59.99m },
-                    { 3, new DateTime(2024, 3, 17, 9, 15, 0, 0, DateTimeKind.Utc), 3, "COMPLETED", 209.97m }
+                    { 1, null, new DateTime(2024, 3, 15, 10, 30, 0, 0, DateTimeKind.Utc), "COMPLETED", 99.98m },
+                    { 2, null, new DateTime(2024, 3, 16, 14, 45, 0, 0, DateTimeKind.Utc), "PENDING", 59.99m },
+                    { 3, null, new DateTime(2024, 3, 17, 9, 15, 0, 0, DateTimeKind.Utc), "COMPLETED", 209.97m }
                 });
 
             migrationBuilder.InsertData(
@@ -123,21 +132,14 @@ namespace App.Repositories.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "BookOrder",
-                columns: new[] { "BooksId", "OrdersId" },
+                table: "OrderItems",
+                columns: new[] { "Id", "BookId", "OrderId", "Quantity", "UnitPrice" },
                 values: new object[,]
                 {
-                    { 1, 1 },
-                    { 1, 3 },
-                    { 2, 1 },
-                    { 2, 2 },
-                    { 3, 3 }
+                    { 1, 1, 1, 2, 49.99m },
+                    { 2, 2, 2, 1, 59.99m },
+                    { 3, 3, 3, 3, 69.99m }
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BookOrder_OrdersId",
-                table: "BookOrder",
-                column: "OrdersId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Books_CategoryId",
@@ -145,23 +147,32 @@ namespace App.Repositories.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Books_ISBN",
-                table: "Books",
-                column: "ISBN",
-                unique: true);
+                name: "IX_OrderItems_BookId",
+                table: "OrderItems",
+                column: "BookId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItems_OrderId_BookId",
+                table: "OrderItems",
+                columns: new[] { "OrderId", "BookId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_BookId",
+                table: "Orders",
+                column: "BookId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "BookOrder");
-
-            migrationBuilder.DropTable(
-                name: "Books");
+                name: "OrderItems");
 
             migrationBuilder.DropTable(
                 name: "Orders");
+
+            migrationBuilder.DropTable(
+                name: "Books");
 
             migrationBuilder.DropTable(
                 name: "Categories");

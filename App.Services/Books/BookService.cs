@@ -62,6 +62,15 @@ public class BookService : IBookService
     }
     public async Task<ServiceResult<CreateBookResponseDto>> CreateAsync(CreateBookRequestDto requestDto)
     {
+        var anybook = await _bookRepository
+            .Where(x => x.Title == requestDto.Title && x.Author == requestDto.Author)
+            .AnyAsync();
+
+        if (anybook)
+        {
+            return ServiceResult<CreateBookResponseDto>.Fail("A book with the same title and author already exists.", HttpStatusCode.BadRequest);
+        }
+
         var book = new Book()
         {
             CategoryId = requestDto.CategoryId,

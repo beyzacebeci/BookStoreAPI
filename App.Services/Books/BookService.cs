@@ -1,7 +1,9 @@
 ﻿using App.Repositories;
 using App.Repositories.Books;
+using App.Repositories.Categories;
 using App.Services.Books.Create;
 using App.Services.Books.Update;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
@@ -11,30 +13,24 @@ public class BookService : IBookService
 {
     private readonly IBookRepository _bookRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICategoryRepository _categoryRepository;
+    private readonly IMapper _mapper;
 
-    public BookService(IBookRepository bookRepository, IUnitOfWork unitOfWork)
+    public BookService(IBookRepository bookRepository, IUnitOfWork unitOfWork, ICategoryRepository categoryRepository, IMapper mapper)
     {
         _bookRepository = bookRepository;
         _unitOfWork = unitOfWork;
+        _categoryRepository = categoryRepository;
+        _mapper = mapper;
     }
 
     public async Task<ServiceResult<List<BookDto>>> GetAllListAsync()
     {
         var books = await _bookRepository.GetAll().ToListAsync();
 
-        var bookDtos = books.Select(book => new BookDto
-        {
-            Id = book.Id,
-            CategoryId = book.CategoryId,
-            Title = book.Title,
-            Author = book.Author,
-            ISBN = book.ISBN,
-            Price = book.Price,
-            StockQuantity = book.StockQuantity,
-            PublicationYear = book.PublicationYear
-        }).ToList();
+        var booksDto = _mapper.Map<List<BookDto>>(books);
 
-        return ServiceResult<List<BookDto>>.Success(bookDtos);
+        return ServiceResult<List<BookDto>>.Success(booksDto);
 
     }
 
@@ -47,41 +43,33 @@ public class BookService : IBookService
             return ServiceResult<BookDto?>.Fail("Book is not found.", HttpStatusCode.NotFound);
         }
 
-        var bookDto = new BookDto
-        {
-            Id = book!.Id,
-            CategoryId = book.CategoryId,
-            Title = book.Title,
-            Author = book.Author,
-            ISBN = book.ISBN,
-            Price = book.Price,
-            StockQuantity = book.StockQuantity,
-            PublicationYear = book.PublicationYear
-        };
+        var bookDto = _mapper.Map<BookDto>(book);
 
         return ServiceResult<BookDto>.Success(bookDto)!;
     }
     public async Task<ServiceResult<CreateBookResponseDto>> CreateAsync(CreateBookRequestDto requestDto)
     {
+        var category = await _categoryRepository.GetByIdAsync(requestDto.CategoryId);
+        if (category is null)
+        {
+            return ServiceResult<CreateBookResponseDto>.Fail(
+                "Category does not exist.",
+                HttpStatusCode.NotFound);
+        }
+
         var anybook = await _bookRepository
             .Where(x => x.Title == requestDto.Title && x.Author == requestDto.Author)
             .AnyAsync();
 
         if (anybook)
         {
-            return ServiceResult<CreateBookResponseDto>.Fail("A book with the same title and author already exists.", HttpStatusCode.BadRequest);
+            return ServiceResult<CreateBookResponseDto>.Fail(
+                "A book with the same title and author already exists.",
+                HttpStatusCode.BadRequest);
         }
 
-        var book = new Book()
-        {
-            CategoryId = requestDto.CategoryId,
-            Title = requestDto.Title,
-            Author = requestDto.Author,
-            ISBN = requestDto.ISBN,
-            Price = requestDto.Price,
-            StockQuantity = requestDto.StockQuantity,
-            PublicationYear = requestDto.PublicationYear
-        };
+        var book = _mapper.Map<Book>(requestDto);
+
         await _bookRepository.AddAsync(book);
         await _unitOfWork.SaveChangesAsync();
 
@@ -93,7 +81,7 @@ public class BookService : IBookService
         if (string.IsNullOrWhiteSpace(title))
         {
             return ServiceResult<List<BookDto>>.Fail(
-                "Arama metni boş olamaz.",
+                "Search text cannot be empty.",
                 HttpStatusCode.BadRequest);
         }
 
@@ -106,69 +94,49 @@ public class BookService : IBookService
                 HttpStatusCode.NoContent);
         }
 
-        var bookDtos = books.Select(book => new BookDto
-        {
-            Id = book.Id,
-            CategoryId = book.CategoryId,
-            Title = book.Title,
-            Author = book.Author,
-            ISBN = book.ISBN,
-            Price = book.Price,
-            StockQuantity = book.StockQuantity,
-            PublicationYear = book.PublicationYear
-        }).ToList();
+        var booksDto = _mapper.Map<List<BookDto>>(books);
 
-        return ServiceResult<List<BookDto>>.Success(bookDtos);
+        return ServiceResult<List<BookDto>>.Success(booksDto);
     }
 
     public async Task<ServiceResult<List<BookDto>>> GetBooksByCategoryAsync(int id)
     {
-        var categoryExists = await _bookRepository.GetAll()
-    .AnyAsync(b => b.CategoryId == id);
+        var categoryExists = await _categoryRepository.GetByIdAsync(id);
 
-        if (!categoryExists)
+        if (categoryExists is null)
         {
             return ServiceResult<List<BookDto>>.Fail(
                 "Category does not exist.",
                 HttpStatusCode.NotFound);
         }
+
         var books = await _bookRepository.GetBooksByCategoryAsync(id);
 
-        var bookDtos = books.Select(book => new BookDto
-        {
-            Id = book.Id,
-            CategoryId = book.CategoryId,
-            Title = book.Title,
-            Author = book.Author,
-            ISBN = book.ISBN,
-            Price = book.Price,
-            StockQuantity = book.StockQuantity,
-            PublicationYear = book.PublicationYear
-        }).ToList();
+        var booksDto = _mapper.Map<List<BookDto>>(books);
 
-        return ServiceResult<List<BookDto>>.Success(bookDtos)!;
+        return ServiceResult<List<BookDto>>.Success(booksDto)!;
 
     }
 
     public async Task<ServiceResult> UpdateAsync(int id, UpdateBookRequestDto requestDto)
     {
         var book = await _bookRepository.GetByIdAsync(id);
-
         if (book is null)
         {
             return ServiceResult.Fail("Book not found.", HttpStatusCode.NotFound);
         }
 
-        book.CategoryId = requestDto.CategoryId;
-        book.Title = requestDto.Title;
-        book.Author = requestDto.Author;
-        book.ISBN = requestDto.ISBN;
-        book.Price = requestDto.Price;
-        book.StockQuantity = requestDto.StockQuantity;
-        book.PublicationYear = requestDto.PublicationYear;
+        // Kategori kontrolü
+        var category = await _categoryRepository.GetByIdAsync(requestDto.CategoryId);
+        if (category is null)
+        {
+            return ServiceResult.Fail("Category does not exist.", HttpStatusCode.NotFound);
+        }
+
+        _mapper.Map(requestDto, book);
+        await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Success();
-
     }
 
     public async Task<ServiceResult> DeleteAsync(int id)

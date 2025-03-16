@@ -5,11 +5,13 @@ using App.Repositories.Orders;
 using App.Services;
 using App.Services.Books;
 using App.Services.Categories;
+using App.Services.Mapping;
 using App.Services.Orders;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(typeof(BookService).Assembly);
+builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
+
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {

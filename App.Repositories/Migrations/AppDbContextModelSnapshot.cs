@@ -135,58 +135,7 @@ namespace App.Repositories.Migrations
                         });
                 });
 
-            modelBuilder.Entity("App.Repositories.Orders.Order", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("BookId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookId");
-
-                    b.ToTable("Orders");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            OrderDate = new DateTime(2024, 3, 15, 10, 30, 0, 0, DateTimeKind.Utc),
-                            Status = "COMPLETED",
-                            TotalPrice = 99.98m
-                        },
-                        new
-                        {
-                            Id = 2,
-                            OrderDate = new DateTime(2024, 3, 16, 14, 45, 0, 0, DateTimeKind.Utc),
-                            Status = "PENDING",
-                            TotalPrice = 59.99m
-                        },
-                        new
-                        {
-                            Id = 3,
-                            OrderDate = new DateTime(2024, 3, 17, 9, 15, 0, 0, DateTimeKind.Utc),
-                            Status = "COMPLETED",
-                            TotalPrice = 209.97m
-                        });
-                });
-
-            modelBuilder.Entity("App.Repositories.Orders.OrderItem", b =>
+            modelBuilder.Entity("App.Repositories.OrderItems.OrderItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -241,6 +190,57 @@ namespace App.Repositories.Migrations
                         });
                 });
 
+            modelBuilder.Entity("App.Repositories.Orders.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BookId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("Orders");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            OrderDate = new DateTime(2024, 3, 15, 10, 30, 0, 0, DateTimeKind.Utc),
+                            Status = "COMPLETED",
+                            TotalPrice = 99.98m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            OrderDate = new DateTime(2024, 3, 16, 14, 45, 0, 0, DateTimeKind.Utc),
+                            Status = "PENDING",
+                            TotalPrice = 59.99m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            OrderDate = new DateTime(2024, 3, 17, 9, 15, 0, 0, DateTimeKind.Utc),
+                            Status = "COMPLETED",
+                            TotalPrice = 209.97m
+                        });
+                });
+
             modelBuilder.Entity("App.Repositories.Books.Book", b =>
                 {
                     b.HasOne("App.Repositories.Categories.Category", "Category")
@@ -252,14 +252,7 @@ namespace App.Repositories.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("App.Repositories.Orders.Order", b =>
-                {
-                    b.HasOne("App.Repositories.Books.Book", null)
-                        .WithMany("Orders")
-                        .HasForeignKey("BookId");
-                });
-
-            modelBuilder.Entity("App.Repositories.Orders.OrderItem", b =>
+            modelBuilder.Entity("App.Repositories.OrderItems.OrderItem", b =>
                 {
                     b.HasOne("App.Repositories.Books.Book", "Book")
                         .WithMany()
@@ -276,6 +269,13 @@ namespace App.Repositories.Migrations
                     b.Navigation("Book");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("App.Repositories.Orders.Order", b =>
+                {
+                    b.HasOne("App.Repositories.Books.Book", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("BookId");
                 });
 
             modelBuilder.Entity("App.Repositories.Books.Book", b =>

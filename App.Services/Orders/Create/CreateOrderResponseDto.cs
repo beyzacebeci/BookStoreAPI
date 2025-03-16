@@ -1,4 +1,4 @@
-﻿namespace App.Services.Orders;
+﻿namespace App.Services.Orders.Create;
 
 public class CreateOrderResponseDto
 {

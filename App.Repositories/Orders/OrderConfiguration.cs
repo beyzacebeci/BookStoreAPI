@@ -12,8 +12,6 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.OrderDate).IsRequired();
         builder.Property(o => o.Status).IsRequired().HasConversion<string>();
 
-        // Books ile many-to-many ilişkisini kaldırın
-        // builder.HasMany(o => o.Books).WithMany(b => b.Orders);
 
         // OrderItems ile one-to-many ilişkisi
         builder.HasMany(o => o.OrderItems)

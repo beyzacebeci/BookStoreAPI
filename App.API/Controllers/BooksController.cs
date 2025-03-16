@@ -1,5 +1,7 @@
 ﻿using App.Repositories.Books;
 using App.Services.Books;
+using App.Services.Books.Create;
+using App.Services.Books.Update;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -46,6 +48,15 @@ public class BooksController : ControllerBase
         return new ObjectResult(bookResult)
         {
             StatusCode = bookResult.HttpStatusCode.GetHashCode()
+        };
+    }
+    [HttpGet("category/{categoryId}")]
+    public async Task<IActionResult> GetBooksByCategory(int categoryId)
+    {
+        var booksResult = await _bookService.GetBooksByCategoryAsync(categoryId);
+        return new ObjectResult(booksResult)
+        {
+            StatusCode = booksResult.HttpStatusCode.GetHashCode()
         };
     }
 

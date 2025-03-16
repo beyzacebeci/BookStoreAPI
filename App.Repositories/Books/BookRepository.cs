@@ -10,7 +10,7 @@ public class BookRepository : GenericRepository<Book>, IBookRepository
         _context = context;
     }
 
-    public async Task<List<Book>> GetBooksByCategory(int categoryId)
+    public async Task<List<Book>> GetBooksByCategoryAsync(int categoryId)
     {
         return await _context.Books
             .Where(b => b.CategoryId == categoryId)

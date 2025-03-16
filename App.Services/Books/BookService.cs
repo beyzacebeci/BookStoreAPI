@@ -1,5 +1,7 @@
 ﻿using App.Repositories;
 using App.Repositories.Books;
+using App.Services.Books.Create;
+using App.Services.Books.Update;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
@@ -19,7 +21,6 @@ public class BookService : IBookService
     public async Task<ServiceResult<List<BookDto>>> GetAllListAsync()
     {
         var books = await _bookRepository.GetAll().ToListAsync();
-
 
         var bookDtos = books.Select(book => new BookDto
         {
@@ -43,7 +44,7 @@ public class BookService : IBookService
 
         if (book is null)
         {
-            ServiceResult<BookDto>.Fail("Book is not found.", HttpStatusCode.NotFound);
+            return ServiceResult<BookDto?>.Fail("Book is not found.", HttpStatusCode.NotFound);
         }
 
         var bookDto = new BookDto
@@ -87,39 +88,6 @@ public class BookService : IBookService
         return ServiceResult<CreateBookResponseDto>.Success(new CreateBookResponseDto { Id = book.Id });
     }
 
-    public async Task<ServiceResult> UpdateAsync(int id, UpdateBookRequestDto requestDto)
-    {
-        var book = await _bookRepository.GetByIdAsync(id);
-
-        if (book is null)
-        {
-            return ServiceResult.Fail("Book not found.", HttpStatusCode.NotFound);
-        }
-
-        book.CategoryId = requestDto.CategoryId;
-        book.Title = requestDto.Title;
-        book.Author = requestDto.Author;
-        book.ISBN = requestDto.ISBN;
-        book.Price = requestDto.Price;
-        book.StockQuantity = requestDto.StockQuantity;
-        book.PublicationYear = requestDto.PublicationYear;
-
-        return ServiceResult.Success();
-
-    }
-
-    public async Task<ServiceResult> DeleteAsync(int id)
-    {
-        var book = await _bookRepository.GetByIdAsync(id);
-        if (book is null)
-        {
-            return ServiceResult.Fail("Book not found.", HttpStatusCode.NotFound);
-        }
-        _bookRepository.Delete(book);
-        await _unitOfWork.SaveChangesAsync();
-        return ServiceResult.Success();
-    }
-
     public async Task<ServiceResult<List<BookDto>>> SearchByTitleAsync(string title)
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -153,8 +121,67 @@ public class BookService : IBookService
         return ServiceResult<List<BookDto>>.Success(bookDtos);
     }
 
+    public async Task<ServiceResult<List<BookDto>>> GetBooksByCategoryAsync(int id)
+    {
+        var categoryExists = await _bookRepository.GetAll()
+    .AnyAsync(b => b.CategoryId == id);
 
+        if (!categoryExists)
+        {
+            return ServiceResult<List<BookDto>>.Fail(
+                "Category does not exist.",
+                HttpStatusCode.NotFound);
+        }
+        var books = await _bookRepository.GetBooksByCategoryAsync(id);
 
+        var bookDtos = books.Select(book => new BookDto
+        {
+            Id = book.Id,
+            CategoryId = book.CategoryId,
+            Title = book.Title,
+            Author = book.Author,
+            ISBN = book.ISBN,
+            Price = book.Price,
+            StockQuantity = book.StockQuantity,
+            PublicationYear = book.PublicationYear
+        }).ToList();
 
+        return ServiceResult<List<BookDto>>.Success(bookDtos)!;
+
+    }
+
+    public async Task<ServiceResult> UpdateAsync(int id, UpdateBookRequestDto requestDto)
+    {
+        var book = await _bookRepository.GetByIdAsync(id);
+
+        if (book is null)
+        {
+            return ServiceResult.Fail("Book not found.", HttpStatusCode.NotFound);
+        }
+
+        book.CategoryId = requestDto.CategoryId;
+        book.Title = requestDto.Title;
+        book.Author = requestDto.Author;
+        book.ISBN = requestDto.ISBN;
+        book.Price = requestDto.Price;
+        book.StockQuantity = requestDto.StockQuantity;
+        book.PublicationYear = requestDto.PublicationYear;
+
+        return ServiceResult.Success();
+
+    }
+
+    public async Task<ServiceResult> DeleteAsync(int id)
+    {
+        var book = await _bookRepository.GetByIdAsync(id);
+        if (book is null)
+        {
+            return ServiceResult.Fail("Book not found.", HttpStatusCode.NotFound);
+        }
+        _bookRepository.Delete(book);
+        await _unitOfWork.SaveChangesAsync();
+        return ServiceResult.Success();
+    }
 }
+
 

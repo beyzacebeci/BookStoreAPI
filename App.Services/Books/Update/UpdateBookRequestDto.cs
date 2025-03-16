@@ -1,7 +1,7 @@
-﻿namespace App.Services.Books;
+﻿namespace App.Services.Books.Update;
 
 public record UpdateBookRequestDto
-    {
+{
     public int CategoryId { get; init; } // FK
     public string Title { get; init; } = default!;
     public string Author { get; init; } = default!;

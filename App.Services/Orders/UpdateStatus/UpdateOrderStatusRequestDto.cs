@@ -1,4 +1,4 @@
-namespace App.Services.Orders;
+namespace App.Services.Orders.UpdateStatus;
 
 public class UpdateOrderStatusRequestDto
 {

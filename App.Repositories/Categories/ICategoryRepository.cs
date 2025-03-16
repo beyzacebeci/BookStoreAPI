@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace App.Repositories.Categories;
 
-namespace App.Repositories.Categories
+public interface ICategoryRepository : IGenericRepository<Category>
 {
-    public interface ICategoryRepository : IGenericRepository<Category> 
-    {
-    }
 }
+

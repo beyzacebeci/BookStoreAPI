@@ -10,7 +10,6 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +21,9 @@ builder.Services.AddControllers(options => {
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
-//.net default error model closed 
 builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddFluentValidationAutoValidation();
-//builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 builder.Services.AddValidatorsFromAssembly(typeof(BookService).Assembly);
-
-//builder.Services.AddValidatorsFromAssembly(typeof(CreateBookRequestValidator).Assembly);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {

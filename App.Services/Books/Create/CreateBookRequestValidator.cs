@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace App.Services.Books;
+namespace App.Services.Books.Create;
 
 public class CreateBookRequestValidator : AbstractValidator<CreateBookRequestDto>
 {
@@ -28,7 +28,7 @@ public class CreateBookRequestValidator : AbstractValidator<CreateBookRequestDto
             .GreaterThanOrEqualTo(0).WithMessage("Stock quantity cannot be negative.");
 
         RuleFor(x => x.PublicationYear)
-            .InclusiveBetween(1450, DateTime.UtcNow.Year) 
+            .InclusiveBetween(1450, DateTime.UtcNow.Year)
             .WithMessage($"Publication year must be between 1800 and {DateTime.UtcNow.Year}.");
     }
 }

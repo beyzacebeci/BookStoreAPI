@@ -1,6 +1,9 @@
 ﻿using App.Repositories;
 using App.Repositories.Books;
+using App.Repositories.OrderItems;
 using App.Repositories.Orders;
+using App.Services.Orders.Create;
+using App.Services.Orders.UpdateStatus;
 using System.Net;
 
 namespace App.Services.Orders;
@@ -47,7 +50,7 @@ public class OrderService : IOrderService
             }).ToList()
         };
 
-        return ServiceResult<OrderDto?>.Success(orderDto);
+        return ServiceResult<OrderDto>.Success(orderDto)!;
     }
 
     public async Task<ServiceResult<CreateOrderResponseDto>> CreateAsync(CreateOrderRequestDto requestDto)
@@ -56,7 +59,7 @@ public class OrderService : IOrderService
         if (requestDto.OrderItems == null || !requestDto.OrderItems.Any())
         {
             return ServiceResult<CreateOrderResponseDto>.Fail(
-                "Sipariş en az bir ürün içermelidir.",
+                "An order must contain at least one product.",
                 HttpStatusCode.BadRequest);
         }
 
@@ -71,7 +74,7 @@ public class OrderService : IOrderService
             if (book == null)
             {
                 return ServiceResult<CreateOrderResponseDto>.Fail(
-                    $"Kitap bulunamadı. ID: {item.BookId}",
+                    $"Book not found. ID: {item.BookId}",
                     HttpStatusCode.NotFound);
             }
 
@@ -79,7 +82,7 @@ public class OrderService : IOrderService
             if (book.StockQuantity < item.Quantity)
             {
                 return ServiceResult<CreateOrderResponseDto>.Fail(
-                    $"Yetersiz stok. Kitap: {book.Title}, Mevcut stok: {book.StockQuantity}, İstenen: {item.Quantity}",
+                    $"Insufficient stock. Book: {book.Title}, Current stock: {book.StockQuantity}, Requested: {item.Quantity}",
                     HttpStatusCode.BadRequest);
             }
 
@@ -108,11 +111,10 @@ public class OrderService : IOrderService
             OrderItems = orderItems
         };
 
-        // 4. Veritabanına kaydet
+
         await _orderRepository.AddAsync(order);
         await _unitOfWork.SaveChangesAsync();
 
-        // 5. Yanıt döndür
         return ServiceResult<CreateOrderResponseDto>.Success(new CreateOrderResponseDto
         {
             Id = order.Id,
@@ -127,14 +129,14 @@ public class OrderService : IOrderService
 
         if (order is null)
         {
-            return ServiceResult.Fail("Sipariş bulunamadı.", HttpStatusCode.NotFound);
+            return ServiceResult.Fail("Order not found.", HttpStatusCode.NotFound);
         }
 
         // Status string'ini enum'a çevirme
         if (!Enum.TryParse<Order.OrderStatus>(requestDto.Status, true, out var newStatus))
         {
             return ServiceResult.Fail(
-                "Geçersiz sipariş durumu. Geçerli değerler: PENDING, COMPLETED, CANCELLED",
+                "Invalid order status. Valid values: PENDING, COMPLETED, CANCELLED.",
                 HttpStatusCode.BadRequest);
         }
 
@@ -142,7 +144,7 @@ public class OrderService : IOrderService
         if (order.Status == Order.OrderStatus.COMPLETED)
         {
             return ServiceResult.Fail(
-                "Tamamlanmış siparişlerin durumu değiştirilemez.",
+                "The status of completed orders cannot be changed.",
                 HttpStatusCode.BadRequest);
         }
 

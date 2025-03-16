@@ -1,4 +1,4 @@
-﻿namespace App.Services.Books;
+﻿namespace App.Services.Books.Create;
 
 public record CreateBookRequestDto
 {

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace App.Repositories.Categories;
 
-namespace App.Repositories.Categories
-{
-    public class CategoryRepository :GenericRepository<Category> ,ICategoryRepository
+public class CategoryRepository :GenericRepository<Category> ,ICategoryRepository
     {
         private readonly AppDbContext _context;
 
@@ -15,4 +9,4 @@ namespace App.Repositories.Categories
             _context = context;
         }
     }
-}
+

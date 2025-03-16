@@ -11,13 +11,11 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.Property(x => x.Title).IsRequired().HasMaxLength(150);
         builder.Property(x => x.Author).IsRequired().HasMaxLength(150);
         builder.Property(x => x.ISBN).IsRequired();
-        //builder.HasIndex(x => x.ISBN).IsUnique();
         builder.Property(x => x.Price).IsRequired().HasColumnType("decimal(18,2)");
 
         builder.Property(x => x.StockQuantity).HasDefaultValue(0);
         builder.Property(x => x.PublicationYear).IsRequired();
 
-        // Foreign Key: Category
         builder.HasOne(x => x.Category)
             .WithMany(c => c.Books)
             .HasForeignKey(x => x.CategoryId);

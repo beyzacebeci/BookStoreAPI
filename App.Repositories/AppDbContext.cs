@@ -1,5 +1,6 @@
 ﻿using App.Repositories.Books;
 using App.Repositories.Categories;
+using App.Repositories.OrderItems;
 using App.Repositories.Orders;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -16,7 +17,6 @@ public class AppDbContext : DbContext
     public DbSet<Category> Categories { get; set; } = default!;
     public DbSet<Order> Orders { get; set; } = default!;
     public DbSet<OrderItem> OrderItems { get; set; } = default!;
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

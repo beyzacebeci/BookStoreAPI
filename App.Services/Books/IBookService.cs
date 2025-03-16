@@ -1,4 +1,7 @@
-﻿namespace App.Services.Books;
+﻿using App.Services.Books.Create;
+using App.Services.Books.Update;
+
+namespace App.Services.Books;
 
 public interface IBookService
 {
@@ -8,5 +11,6 @@ public interface IBookService
     Task<ServiceResult> UpdateAsync(int id, UpdateBookRequestDto requestDto);
     Task<ServiceResult> DeleteAsync(int id);
     Task<ServiceResult<List<BookDto>>> SearchByTitleAsync(string title);
+    Task<ServiceResult<List<BookDto>>> GetBooksByCategoryAsync(int id);
 }
 

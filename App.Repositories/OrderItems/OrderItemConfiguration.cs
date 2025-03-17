@@ -16,13 +16,11 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
 
         builder.HasOne(oi => oi.Order)
             .WithMany(o => o.OrderItems)
-            .HasForeignKey(oi => oi.OrderId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(oi => oi.OrderId);
 
         builder.HasOne(oi => oi.Book)
             .WithMany()
-            .HasForeignKey(oi => oi.BookId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(oi => oi.BookId);
 
         // Index
         builder.HasIndex(oi => new { oi.OrderId, oi.BookId });

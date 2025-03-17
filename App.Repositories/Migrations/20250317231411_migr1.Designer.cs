@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace App.Repositories.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250316172042_mig_1")]
-    partial class mig_1
+    [Migration("20250317231411_migr1")]
+    partial class migr1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,6 +45,9 @@ namespace App.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
@@ -74,6 +77,7 @@ namespace App.Repositories.Migrations
                             Author = "Fyodor Dostoyevski",
                             CategoryId = 1,
                             ISBN = "9789750719387",
+                            IsDeleted = false,
                             Price = 49.99m,
                             PublicationYear = 1866,
                             StockQuantity = 50,
@@ -85,6 +89,7 @@ namespace App.Repositories.Migrations
                             Author = "Frank Herbert",
                             CategoryId = 2,
                             ISBN = "9789753421851",
+                            IsDeleted = false,
                             Price = 59.99m,
                             PublicationYear = 1965,
                             StockQuantity = 30,
@@ -96,6 +101,7 @@ namespace App.Repositories.Migrations
                             Author = "Mustafa Kemal Atatürk",
                             CategoryId = 3,
                             ISBN = "9789944885348",
+                            IsDeleted = false,
                             Price = 69.99m,
                             PublicationYear = 1927,
                             StockQuantity = 40,
@@ -111,6 +117,9 @@ namespace App.Repositories.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -124,16 +133,19 @@ namespace App.Repositories.Migrations
                         new
                         {
                             Id = 1,
+                            IsDeleted = false,
                             Name = "Roman"
                         },
                         new
                         {
                             Id = 2,
+                            IsDeleted = false,
                             Name = "Bilim Kurgu"
                         },
                         new
                         {
                             Id = 3,
+                            IsDeleted = false,
                             Name = "Tarih"
                         });
                 });
@@ -148,6 +160,9 @@ namespace App.Repositories.Migrations
 
                     b.Property<int>("BookId")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("integer");
@@ -171,6 +186,7 @@ namespace App.Repositories.Migrations
                         {
                             Id = 1,
                             BookId = 1,
+                            IsDeleted = false,
                             OrderId = 1,
                             Quantity = 2,
                             UnitPrice = 49.99m
@@ -179,6 +195,7 @@ namespace App.Repositories.Migrations
                         {
                             Id = 2,
                             BookId = 2,
+                            IsDeleted = false,
                             OrderId = 2,
                             Quantity = 1,
                             UnitPrice = 59.99m
@@ -187,6 +204,7 @@ namespace App.Repositories.Migrations
                         {
                             Id = 3,
                             BookId = 3,
+                            IsDeleted = false,
                             OrderId = 3,
                             Quantity = 3,
                             UnitPrice = 69.99m
@@ -203,6 +221,9 @@ namespace App.Repositories.Migrations
 
                     b.Property<int?>("BookId")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("timestamp with time zone");
@@ -224,6 +245,7 @@ namespace App.Repositories.Migrations
                         new
                         {
                             Id = 1,
+                            IsDeleted = false,
                             OrderDate = new DateTime(2024, 3, 15, 10, 30, 0, 0, DateTimeKind.Utc),
                             Status = "COMPLETED",
                             TotalPrice = 99.98m
@@ -231,6 +253,7 @@ namespace App.Repositories.Migrations
                         new
                         {
                             Id = 2,
+                            IsDeleted = false,
                             OrderDate = new DateTime(2024, 3, 16, 14, 45, 0, 0, DateTimeKind.Utc),
                             Status = "PENDING",
                             TotalPrice = 59.99m
@@ -238,6 +261,7 @@ namespace App.Repositories.Migrations
                         new
                         {
                             Id = 3,
+                            IsDeleted = false,
                             OrderDate = new DateTime(2024, 3, 17, 9, 15, 0, 0, DateTimeKind.Utc),
                             Status = "COMPLETED",
                             TotalPrice = 209.97m
@@ -260,13 +284,13 @@ namespace App.Repositories.Migrations
                     b.HasOne("App.Repositories.Books.Book", "Book")
                         .WithMany()
                         .HasForeignKey("BookId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("App.Repositories.Orders.Order", "Order")
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Book");

@@ -73,7 +73,7 @@ public class BookService : IBookService
         await _bookRepository.AddAsync(book);
         await _unitOfWork.SaveChangesAsync();
 
-        return ServiceResult<CreateBookResponseDto>.Success(new CreateBookResponseDto { Id = book.Id },HttpStatusCode.Created);
+        return ServiceResult<CreateBookResponseDto>.Success(new CreateBookResponseDto { Id = book.Id }, HttpStatusCode.Created);
     }
 
     public async Task<ServiceResult<List<BookDto>>> SearchByTitleAsync(string title)
@@ -135,7 +135,7 @@ public class BookService : IBookService
         _mapper.Map(requestDto, book);
         await _unitOfWork.SaveChangesAsync();
 
-        return ServiceResult.Success();
+        return ServiceResult.Success(HttpStatusCode.NoContent);
     }
 
     public async Task<ServiceResult> DeleteAsync(int id)
@@ -145,8 +145,10 @@ public class BookService : IBookService
         {
             return ServiceResult.Fail("Book not found.", HttpStatusCode.NotFound);
         }
-        _bookRepository.Delete(book);
+
+        book.IsDeleted = true;
         await _unitOfWork.SaveChangesAsync();
+
         return ServiceResult.Success(HttpStatusCode.NoContent);
     }
 }

@@ -15,7 +15,7 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
         return await _context.Orders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Book)
-            .FirstOrDefaultAsync(o => o.Id == id);
+            .FirstOrDefaultAsync(o => o.Id == id && !o.IsDeleted);
     }
 }
 

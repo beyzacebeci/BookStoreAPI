@@ -105,17 +105,77 @@ dotnet ef database update --startup-project ../App.API
 
 - Lists all books
 - Public endpoint
+- Returns:
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "categoryId": 1,
+      "title": "Suç ve Ceza",
+      "author": "Fyodor Dostoyevski",
+      "isbn": "9789750719387",
+      "price": 49.99,
+      "stockQuantity": 0,
+      "publicationYear": 1866
+    }
+  ],
+  "errorMessage": null,
+  "httpStatusCode": 200,
+  "isSuccess": true
+}
+```
 
 #### GET `/api/books/{id}`
 
-- Gets book details
+- Gets book details by ID
 - Public endpoint
+- Returns:
+
+```json
+{
+  "data": {
+    "id": 1,
+    "categoryId": 1,
+    "title": "Suç ve Ceza",
+    "author": "Fyodor Dostoyevski",
+    "isbn": "9789750719387",
+    "price": 49.99,
+    "stockQuantity": 0,
+    "publicationYear": 1866
+  },
+  "errorMessage": null,
+  "httpStatusCode": 200,
+  "isSuccess": true
+}
+```
 
 #### GET `/api/books/search?title={title}`
 
 - Searches books by title
 - Case-insensitive, partial match supported
 - Public endpoint
+
+```json
+{
+  "data": [
+    {
+      "id": 3,
+      "categoryId": 3,
+      "title": "Nutuk",
+      "author": "Mustafa Kemal Atatürk",
+      "isbn": "9789944885348",
+      "price": 69.99,
+      "stockQuantity": 40,
+      "publicationYear": 1927
+    }
+  ],
+  "errorMessage": null,
+  "httpStatusCode": 200,
+  "isSuccess": true
+}
+```
 
 #### GET `/api/books/category/{categoryId}`
 
@@ -124,10 +184,43 @@ dotnet ef database update --startup-project ../App.API
 
 #### POST `/api/books`
 
+- Create a book
+- Request body:
+
+```json
+{
+  "categoryId": 2,
+  "title": "Beyaz Gemi",
+  "author": "Cengiz Aytmatov",
+  "isbn": "4353453445",
+  "price": 55,
+  "stockQuantity": 45,
+  "publicationYear": 1965
+}
+```
+
+- Returns:
+
+```json
+{
+  "data": {
+    "id": 8
+  },
+  "errorMessage": null,
+  "httpStatusCode": 201,
+  "isSuccess": true
+}
+```
+
+#### PUT `/api/books/{id}`
+
+- Updates book information
+- Request body:
+
 ```json
 {
   "categoryId": 1,
-  "title": "Sample Book",
+  "title": "Updated Book Title",
   "author": "John Doe",
   "isbn": "1234567890",
   "price": 29.99,
@@ -136,21 +229,61 @@ dotnet ef database update --startup-project ../App.API
 }
 ```
 
-#### PUT `/api/books/{id}`
+- Returns:
 
-- Updates book information
+```json
+{
+  "errorMessage": null,
+  "httpStatusCode": 204
+}
+```
 
 #### DELETE `/api/books/{id}`
 
 - Deletes a book
+- Returns:
+
+```json
+{
+  "errorMessage": null,
+  "httpStatusCode": 204
+}
+```
 
 ### 📦 Orders
 
 #### GET `/api/orders/{id}`
 
 - Gets order details with items
+- Returns:
+
+```json
+{
+  "isSuccessful": true,
+  "data": {
+    "id": 1,
+    "orderDate": "2024-03-16T10:00:00Z",
+    "totalPrice": 59.98,
+    "status": "PENDING",
+    "orderItems": [
+      {
+        "bookId": 1,
+        "quantity": 2,
+        "unitPrice": 29.99
+      }
+    ]
+  },
+  "errors": null,
+  "httpStatusCode": 200
+}
+```
 
 #### POST `/api/orders`
+
+- Creates a new order
+- Validates stock availability
+- Updates book stock quantities
+- Request body:
 
 ```json
 {
@@ -163,7 +296,26 @@ dotnet ef database update --startup-project ../App.API
 }
 ```
 
+- Returns:
+
+```json
+{
+  "isSuccessful": true,
+  "data": {
+    "id": 1,
+    "totalPrice": 59.98
+  },
+  "errors": null,
+  "httpStatusCode": 201
+}
+```
+
 #### PUT `/api/orders/{id}/status`
+
+- Updates order status
+- Cannot update COMPLETED orders
+- Restores book stock quantities when cancelled
+- Request body:
 
 ```json
 {
@@ -171,7 +323,14 @@ dotnet ef database update --startup-project ../App.API
 }
 ```
 
-Valid statuses: `PENDING`, `COMPLETED`, `CANCELLED`
+- Returns:
+
+```json
+{
+  "errorMessage": null,
+  "httpStatusCode": 200
+}
+```
 
 ### 🏷️ Categories
 
@@ -181,28 +340,50 @@ Valid statuses: `PENDING`, `COMPLETED`, `CANCELLED`
 - Returns:
 
 ```json
-[
-  {
-    "id": 1,
-    "name": "Fiction"
-  }
-]
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Nobel"
+    },
+    {
+      "id": 2,
+      "name": "Science"
+    }
+  ],
+  "errorMessage": null,
+  "httpStatusCode": 200,
+  "isSuccess": true
+}
 ```
 
 #### POST `/api/categories`
 
 - Creates new category
+- Request body:
+
+```json
+{
+  "name": "Fiction"
+}
+```
+
 - Returns:
 
 ```json
 {
-  "id": 1
+  "data": {
+    "id": 5
+  },
+  "errorMessage": null,
+  "httpStatusCode": 201,
+  "isSuccess": true
 }
 ```
 
 ## 📊 Database Schema
 
-![Ekran görüntüsü 2025-03-16 015332](https://github.com/user-attachments/assets/9b97f381-bd5d-49f7-823a-774ae9951196)
+![Ekran görüntüsü 2025-03-16 015332](https://github.com/user-attachments/assets/6fd442cb-54df-483c-b589-e878fe9aee4b)
 
 ### Books
 
@@ -282,7 +463,6 @@ Example error response:
 - FluentValidation
 - Npgsql.EntityFrameworkCore.PostgreSQL
 - AutoMapper
-- AutoMapper.Collection
 
 ## 🤝 Contributing
 

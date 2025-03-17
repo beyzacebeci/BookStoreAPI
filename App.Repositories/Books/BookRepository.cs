@@ -13,7 +13,7 @@ public class BookRepository : GenericRepository<Book>, IBookRepository
     public async Task<List<Book>> GetBooksByCategoryAsync(int categoryId)
     {
         return await _context.Books
-            .Where(b => b.CategoryId == categoryId)
+            .Where(b => b.CategoryId == categoryId && b.IsDeleted == false)
             .Include(b => b.Category)
             .AsNoTracking()
             .ToListAsync();
@@ -22,7 +22,7 @@ public class BookRepository : GenericRepository<Book>, IBookRepository
     public async Task<List<Book>> SearchByTitleAsync(string title)
     {
         return await _context.Books
-            .Where(b => b.Title.ToLower().Contains(title.ToLower()))
+            .Where(b => b.Title.ToLower().Contains(title.ToLower()) && b.IsDeleted == false)
             .Include(b => b.Category)
             .AsNoTracking()
             .ToListAsync();

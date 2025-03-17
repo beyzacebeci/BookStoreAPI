@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace App.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class mig_1 : Migration
+    public partial class migr1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,8 @@ namespace App.Repositories.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false)
+                    Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -39,7 +40,8 @@ namespace App.Repositories.Migrations
                     ISBN = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     StockQuantity = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    PublicationYear = table.Column<int>(type: "integer", nullable: false)
+                    PublicationYear = table.Column<int>(type: "integer", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -61,6 +63,7 @@ namespace App.Repositories.Migrations
                     OrderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     BookId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -82,7 +85,8 @@ namespace App.Repositories.Migrations
                     OrderId = table.Column<int>(type: "integer", nullable: false),
                     BookId = table.Column<int>(type: "integer", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
+                    UnitPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -92,53 +96,53 @@ namespace App.Repositories.Migrations
                         column: x => x.BookId,
                         principalTable: "Books",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_OrderItems_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
                 table: "Categories",
-                columns: new[] { "Id", "Name" },
+                columns: new[] { "Id", "IsDeleted", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Roman" },
-                    { 2, "Bilim Kurgu" },
-                    { 3, "Tarih" }
+                    { 1, false, "Roman" },
+                    { 2, false, "Bilim Kurgu" },
+                    { 3, false, "Tarih" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Orders",
-                columns: new[] { "Id", "BookId", "OrderDate", "Status", "TotalPrice" },
+                columns: new[] { "Id", "BookId", "IsDeleted", "OrderDate", "Status", "TotalPrice" },
                 values: new object[,]
                 {
-                    { 1, null, new DateTime(2024, 3, 15, 10, 30, 0, 0, DateTimeKind.Utc), "COMPLETED", 99.98m },
-                    { 2, null, new DateTime(2024, 3, 16, 14, 45, 0, 0, DateTimeKind.Utc), "PENDING", 59.99m },
-                    { 3, null, new DateTime(2024, 3, 17, 9, 15, 0, 0, DateTimeKind.Utc), "COMPLETED", 209.97m }
+                    { 1, null, false, new DateTime(2024, 3, 15, 10, 30, 0, 0, DateTimeKind.Utc), "COMPLETED", 99.98m },
+                    { 2, null, false, new DateTime(2024, 3, 16, 14, 45, 0, 0, DateTimeKind.Utc), "PENDING", 59.99m },
+                    { 3, null, false, new DateTime(2024, 3, 17, 9, 15, 0, 0, DateTimeKind.Utc), "COMPLETED", 209.97m }
                 });
 
             migrationBuilder.InsertData(
                 table: "Books",
-                columns: new[] { "Id", "Author", "CategoryId", "ISBN", "Price", "PublicationYear", "StockQuantity", "Title" },
+                columns: new[] { "Id", "Author", "CategoryId", "ISBN", "IsDeleted", "Price", "PublicationYear", "StockQuantity", "Title" },
                 values: new object[,]
                 {
-                    { 1, "Fyodor Dostoyevski", 1, "9789750719387", 49.99m, 1866, 50, "Suç ve Ceza" },
-                    { 2, "Frank Herbert", 2, "9789753421851", 59.99m, 1965, 30, "Dune" },
-                    { 3, "Mustafa Kemal Atatürk", 3, "9789944885348", 69.99m, 1927, 40, "Nutuk" }
+                    { 1, "Fyodor Dostoyevski", 1, "9789750719387", false, 49.99m, 1866, 50, "Suç ve Ceza" },
+                    { 2, "Frank Herbert", 2, "9789753421851", false, 59.99m, 1965, 30, "Dune" },
+                    { 3, "Mustafa Kemal Atatürk", 3, "9789944885348", false, 69.99m, 1927, 40, "Nutuk" }
                 });
 
             migrationBuilder.InsertData(
                 table: "OrderItems",
-                columns: new[] { "Id", "BookId", "OrderId", "Quantity", "UnitPrice" },
+                columns: new[] { "Id", "BookId", "IsDeleted", "OrderId", "Quantity", "UnitPrice" },
                 values: new object[,]
                 {
-                    { 1, 1, 1, 2, 49.99m },
-                    { 2, 2, 2, 1, 59.99m },
-                    { 3, 3, 3, 3, 69.99m }
+                    { 1, 1, false, 1, 2, 49.99m },
+                    { 2, 2, false, 2, 1, 59.99m },
+                    { 3, 3, false, 3, 3, 69.99m }
                 });
 
             migrationBuilder.CreateIndex(

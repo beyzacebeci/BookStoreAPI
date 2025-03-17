@@ -73,7 +73,7 @@ public class BookService : IBookService
         await _bookRepository.AddAsync(book);
         await _unitOfWork.SaveChangesAsync();
 
-        return ServiceResult<CreateBookResponseDto>.Success(new CreateBookResponseDto { Id = book.Id });
+        return ServiceResult<CreateBookResponseDto>.Success(new CreateBookResponseDto { Id = book.Id },HttpStatusCode.Created);
     }
 
     public async Task<ServiceResult<List<BookDto>>> SearchByTitleAsync(string title)
@@ -126,7 +126,6 @@ public class BookService : IBookService
             return ServiceResult.Fail("Book not found.", HttpStatusCode.NotFound);
         }
 
-        // Kategori kontrolü
         var category = await _categoryRepository.GetByIdAsync(requestDto.CategoryId);
         if (category is null)
         {
@@ -148,7 +147,7 @@ public class BookService : IBookService
         }
         _bookRepository.Delete(book);
         await _unitOfWork.SaveChangesAsync();
-        return ServiceResult.Success();
+        return ServiceResult.Success(HttpStatusCode.NoContent);
     }
 }
 

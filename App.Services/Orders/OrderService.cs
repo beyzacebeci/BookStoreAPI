@@ -4,6 +4,7 @@ using App.Repositories.OrderItems;
 using App.Repositories.Orders;
 using App.Services.Orders.Create;
 using App.Services.Orders.UpdateStatus;
+using AutoMapper;
 using System.Net;
 
 namespace App.Services.Orders;
@@ -13,15 +14,17 @@ public class OrderService : IOrderService
     private readonly IOrderRepository _orderRepository;
     private readonly IBookRepository _bookRepository;
     private readonly IUnitOfWork _unitOfWork;
-
+    private readonly IMapper _mapper;
     public OrderService(
         IOrderRepository orderRepository,
         IBookRepository bookRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IMapper mapper)
     {
         _orderRepository = orderRepository;
         _bookRepository = bookRepository;
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<ServiceResult<OrderDto?>> GetByIdAsync(int id)
@@ -33,29 +36,15 @@ public class OrderService : IOrderService
             return ServiceResult<OrderDto?>.Fail("Order is not found.", HttpStatusCode.NotFound);
         }
 
-        var orderDto = new OrderDto
-        {
-            Id = order.Id,
-            TotalPrice = order.TotalPrice,
-            OrderDate = order.OrderDate,
-            Status = order.Status.ToString(),
-            Items = order.OrderItems.Select(item => new OrderItemDto
-            {
-                BookId = item.BookId,
-                BookTitle = item.Book.Title,
-                BookAuthor = item.Book.Author,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice,
-                SubTotal = item.UnitPrice * item.Quantity
-            }).ToList()
-        };
+        var orderDto = _mapper.Map<OrderDto>(order);
+
 
         return ServiceResult<OrderDto>.Success(orderDto)!;
     }
 
     public async Task<ServiceResult<CreateOrderResponseDto>> CreateAsync(CreateOrderRequestDto requestDto)
     {
-        // 1. Sipariş validasyonu
+        // Order validation
         if (requestDto.OrderItems == null || !requestDto.OrderItems.Any())
         {
             return ServiceResult<CreateOrderResponseDto>.Fail(
@@ -66,7 +55,7 @@ public class OrderService : IOrderService
         decimal totalPrice = 0;
         var orderItems = new List<OrderItem>();
 
-        // 2. Her bir kitap için stok kontrolü ve OrderItem oluşturma
+        // Stock control for each book and creating an OrderItem.
         foreach (var item in requestDto.OrderItems)
         {
             var book = await _bookRepository.GetByIdAsync(item.BookId);
@@ -78,7 +67,7 @@ public class OrderService : IOrderService
                     HttpStatusCode.NotFound);
             }
 
-            // Stok kontrolü
+            // Stock control
             if (book.StockQuantity < item.Quantity)
             {
                 return ServiceResult<CreateOrderResponseDto>.Fail(
@@ -86,7 +75,6 @@ public class OrderService : IOrderService
                     HttpStatusCode.BadRequest);
             }
 
-            // OrderItem oluştur
             var orderItem = new OrderItem
             {
                 BookId = book.Id,
@@ -97,12 +85,12 @@ public class OrderService : IOrderService
             orderItems.Add(orderItem);
             totalPrice += book.Price * item.Quantity;
 
-            // Stok miktarını güncelle
+            // update stock quantity
             book.StockQuantity -= item.Quantity;
             _bookRepository.Update(book);
         }
 
-        // 3. Order oluştur
+        // Create Order
         var order = new Order
         {
             OrderDate = DateTime.UtcNow,
@@ -111,16 +99,11 @@ public class OrderService : IOrderService
             OrderItems = orderItems
         };
 
-
-        await _orderRepository.AddAsync(order);
+        await _orderRepository.AddAsync(order); 
         await _unitOfWork.SaveChangesAsync();
 
-        return ServiceResult<CreateOrderResponseDto>.Success(new CreateOrderResponseDto
-        {
-            Id = order.Id,
-            TotalPrice = order.TotalPrice,
-            OrderDate = order.OrderDate
-        });
+        var responseDto = _mapper.Map<CreateOrderResponseDto>(order);
+        return ServiceResult<CreateOrderResponseDto>.Success( responseDto,HttpStatusCode.Created);
     }
 
     public async Task<ServiceResult> UpdateStatusAsync(int id, UpdateOrderStatusRequestDto requestDto)
@@ -132,7 +115,7 @@ public class OrderService : IOrderService
             return ServiceResult.Fail("Order not found.", HttpStatusCode.NotFound);
         }
 
-        // Status string'ini enum'a çevirme
+        // Convert status string to enum
         if (!Enum.TryParse<Order.OrderStatus>(requestDto.Status, true, out var newStatus))
         {
             return ServiceResult.Fail(
@@ -165,7 +148,6 @@ public class OrderService : IOrderService
 
         order.Status = newStatus;
         await _unitOfWork.SaveChangesAsync();
-
         return ServiceResult.Success();
     }
 }

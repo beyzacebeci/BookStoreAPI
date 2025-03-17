@@ -6,9 +6,6 @@ public class CreateBookRequestValidator : AbstractValidator<CreateBookRequestDto
 {
     public CreateBookRequestValidator()
     {
-        //RuleFor(x => x.CategoryId)
-        //    .GreaterThan(0).WithMessage("CategoryId must be greater than zero.");
-
         RuleFor(x => x.Title)
             .NotNull().WithMessage("Book title cannot be null.")
             .NotEmpty().WithMessage("Book title cannot be empty.");
@@ -29,7 +26,7 @@ public class CreateBookRequestValidator : AbstractValidator<CreateBookRequestDto
 
         RuleFor(x => x.PublicationYear)
             .InclusiveBetween(1450, DateTime.UtcNow.Year)
-            .WithMessage($"Publication year must be between 1800 and {DateTime.UtcNow.Year}.");
+            .WithMessage($"Publication year must be between 1450 and {DateTime.UtcNow.Year}.");
     }
 }
 

@@ -29,6 +29,7 @@ A simple RESTful API for managing a bookstore's inventory and orders.
 - **Entity Framework Core**
 - **PostgreSQL**
 - **FluentValidation**
+- **AutoMapper**
 - **Swagger/OpenAPI**
 
 ## 🏗 Architecture
@@ -177,12 +178,31 @@ Valid statuses: `PENDING`, `COMPLETED`, `CANCELLED`
 #### GET `/api/categories`
 
 - Lists all categories
+- Returns:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Fiction"
+  }
+]
+```
 
 #### POST `/api/categories`
 
 - Creates new category
+- Returns:
+
+```json
+{
+  "id": 1
+}
+```
 
 ## 📊 Database Schema
+
+![Ekran görüntüsü 2025-03-16 015332](https://github.com/user-attachments/assets/9b97f381-bd5d-49f7-823a-774ae9951196)
 
 ### Books
 
@@ -236,9 +256,22 @@ All endpoints return standardized response:
 }
 ```
 
+Example error response:
+
+```json
+{
+  "isSuccessful": false,
+  "data": null,
+  "errors": ["Book not found"],
+  "httpStatusCode": 404
+}
+```
+
 ### Status Codes
 
 - 200: Success
+- 201: Created
+- 204: No Content
 - 400: Bad Request
 - 404: Not Found
 - 500: Server Error
@@ -248,6 +281,8 @@ All endpoints return standardized response:
 - Microsoft.EntityFrameworkCore
 - FluentValidation
 - Npgsql.EntityFrameworkCore.PostgreSQL
+- AutoMapper
+- AutoMapper.Collection
 
 ## 🤝 Contributing
 
@@ -256,3 +291,8 @@ All endpoints return standardized response:
 3. Commit changes
 4. Push to branch
 5. Create Pull Request
+
+## 📋 Requirements
+
+- .NET 9.0 SDK
+- PostgreSQL 15 or higher

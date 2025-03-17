@@ -6,10 +6,6 @@ public class CreateOrderItemRequestValidator : AbstractValidator<CreateOrderItem
 {
     public CreateOrderItemRequestValidator()
     {
-        RuleFor(x => x.BookId)
-            .GreaterThan(0)
-            .WithMessage("Book ID must be greater than 0.");
-
         RuleFor(x => x.Quantity)
             .GreaterThan(0)
             .WithMessage("Quantity must be greater than 0.")

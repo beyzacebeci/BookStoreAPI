@@ -5,6 +5,7 @@ using App.Repositories.Orders;
 using App.Services;
 using App.Services.Books;
 using App.Services.Categories;
+using App.Services.ExceptionHandlers;
 using App.Services.Mapping;
 using App.Services.Orders;
 using FluentValidation;
@@ -19,9 +20,12 @@ builder.Services.AddControllers(options => {
     options.Filters.Add<FluentValidationFilter>();
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 });
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
+
 
 builder.Services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddFluentValidationAutoValidation();
@@ -47,8 +51,10 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 
-
 var app = builder.Build();
+
+
+app.UseExceptionHandler(x => { });
 
 if (app.Environment.IsDevelopment())
 {

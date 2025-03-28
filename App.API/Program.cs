@@ -1,3 +1,4 @@
+using App.API.Middlewares;
 using App.Repositories;
 using App.Repositories.Books;
 using App.Repositories.Categories;
@@ -15,6 +16,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddLogging();
 
 builder.Services.AddControllers(options => {
     options.Filters.Add<FluentValidationFilter>();
@@ -53,6 +56,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 var app = builder.Build();
 
+app.UseMiddleware<LoggingMiddleware>();
 
 app.UseExceptionHandler(x => { });
 

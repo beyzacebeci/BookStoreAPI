@@ -9,11 +9,25 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace App.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class migr1 : Migration
+    public partial class mig_1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Authors",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Authors", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
@@ -34,9 +48,9 @@ namespace App.Repositories.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AuthorId = table.Column<int>(type: "integer", nullable: false),
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
                     Title = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                    Author = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     ISBN = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     StockQuantity = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
@@ -46,6 +60,12 @@ namespace App.Repositories.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Books", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Books_Authors_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "Authors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Books_Categories_CategoryId",
                         column: x => x.CategoryId,
@@ -106,6 +126,16 @@ namespace App.Repositories.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Authors",
+                columns: new[] { "Id", "IsDeleted", "Name" },
+                values: new object[,]
+                {
+                    { 1, false, "Dostoyevski" },
+                    { 2, false, "Frank Herbert" },
+                    { 3, false, "Atatürk" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Categories",
                 columns: new[] { "Id", "IsDeleted", "Name" },
                 values: new object[,]
@@ -127,12 +157,12 @@ namespace App.Repositories.Migrations
 
             migrationBuilder.InsertData(
                 table: "Books",
-                columns: new[] { "Id", "Author", "CategoryId", "ISBN", "IsDeleted", "Price", "PublicationYear", "StockQuantity", "Title" },
+                columns: new[] { "Id", "AuthorId", "CategoryId", "ISBN", "IsDeleted", "Price", "PublicationYear", "StockQuantity", "Title" },
                 values: new object[,]
                 {
-                    { 1, "Fyodor Dostoyevski", 1, "9789750719387", false, 49.99m, 1866, 50, "Suç ve Ceza" },
-                    { 2, "Frank Herbert", 2, "9789753421851", false, 59.99m, 1965, 30, "Dune" },
-                    { 3, "Mustafa Kemal Atatürk", 3, "9789944885348", false, 69.99m, 1927, 40, "Nutuk" }
+                    { 1, 1, 1, "9789750719387", false, 49.99m, 1866, 50, "Suç ve Ceza" },
+                    { 2, 2, 2, "9789753421851", false, 59.99m, 1965, 30, "Dune" },
+                    { 3, 3, 3, "9789944885348", false, 69.99m, 1927, 40, "Nutuk" }
                 });
 
             migrationBuilder.InsertData(
@@ -144,6 +174,11 @@ namespace App.Repositories.Migrations
                     { 2, 2, false, 2, 1, 59.99m },
                     { 3, 3, false, 3, 3, 69.99m }
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Books_AuthorId",
+                table: "Books",
+                column: "AuthorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Books_CategoryId",
@@ -177,6 +212,9 @@ namespace App.Repositories.Migrations
 
             migrationBuilder.DropTable(
                 name: "Books");
+
+            migrationBuilder.DropTable(
+                name: "Authors");
 
             migrationBuilder.DropTable(
                 name: "Categories");

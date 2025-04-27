@@ -58,7 +58,7 @@ public class BookService : IBookService
         }
 
         var anybook = await _bookRepository
-            .Where(x => x.Title == requestDto.Title && x.Author == requestDto.Author)
+            .Where(x => x.Title == requestDto.Title)
             .AnyAsync();
 
         if (anybook)

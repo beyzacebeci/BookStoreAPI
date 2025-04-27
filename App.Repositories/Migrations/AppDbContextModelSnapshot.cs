@@ -22,6 +22,47 @@ namespace App.Repositories.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("App.Repositories.Authors.Author", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Authors");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsDeleted = false,
+                            Name = "Dostoyevski"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsDeleted = false,
+                            Name = "Frank Herbert"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            IsDeleted = false,
+                            Name = "Atatürk"
+                        });
+                });
+
             modelBuilder.Entity("App.Repositories.Books.Book", b =>
                 {
                     b.Property<int>("Id")
@@ -30,10 +71,8 @@ namespace App.Repositories.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
@@ -63,6 +102,8 @@ namespace App.Repositories.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AuthorId");
+
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Books");
@@ -71,7 +112,7 @@ namespace App.Repositories.Migrations
                         new
                         {
                             Id = 1,
-                            Author = "Fyodor Dostoyevski",
+                            AuthorId = 1,
                             CategoryId = 1,
                             ISBN = "9789750719387",
                             IsDeleted = false,
@@ -83,7 +124,7 @@ namespace App.Repositories.Migrations
                         new
                         {
                             Id = 2,
-                            Author = "Frank Herbert",
+                            AuthorId = 2,
                             CategoryId = 2,
                             ISBN = "9789753421851",
                             IsDeleted = false,
@@ -95,7 +136,7 @@ namespace App.Repositories.Migrations
                         new
                         {
                             Id = 3,
-                            Author = "Mustafa Kemal Atatürk",
+                            AuthorId = 3,
                             CategoryId = 3,
                             ISBN = "9789944885348",
                             IsDeleted = false,
@@ -267,11 +308,19 @@ namespace App.Repositories.Migrations
 
             modelBuilder.Entity("App.Repositories.Books.Book", b =>
                 {
+                    b.HasOne("App.Repositories.Authors.Author", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("App.Repositories.Categories.Category", "Category")
                         .WithMany("Books")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Author");
 
                     b.Navigation("Category");
                 });

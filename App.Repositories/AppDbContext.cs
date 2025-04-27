@@ -1,4 +1,5 @@
-﻿using App.Repositories.Books;
+﻿using App.Repositories.Authors;
+using App.Repositories.Books;
 using App.Repositories.Categories;
 using App.Repositories.OrderItems;
 using App.Repositories.Orders;
@@ -15,6 +16,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Book> Books { get; set; } = default!;
     public DbSet<Category> Categories { get; set; } = default!;
+    public DbSet<Author> Authors { get; set; } = default!;
     public DbSet<Order> Orders { get; set; } = default!;
     public DbSet<OrderItem> OrderItems { get; set; } = default!;
 

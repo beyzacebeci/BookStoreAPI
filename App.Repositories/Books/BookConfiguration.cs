@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Reflection.Emit;
 
 namespace App.Repositories.Books;
 
@@ -9,12 +10,16 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Title).IsRequired().HasMaxLength(150);
-        builder.Property(x => x.Author).IsRequired().HasMaxLength(150);
         builder.Property(x => x.ISBN).IsRequired();
         builder.Property(x => x.Price).IsRequired().HasColumnType("decimal(18,2)");
 
         builder.Property(x => x.StockQuantity).HasDefaultValue(0);
         builder.Property(x => x.PublicationYear).IsRequired();
+
+
+        builder.HasOne(b => b.Author)   // Book'un bir Author'u vardır
+             .WithMany()              // Author'un birden çok Book'u olabilir (isteğe göre)
+            .HasForeignKey(b => b.AuthorId);
 
         builder.HasOne(x => x.Category)
             .WithMany(c => c.Books)
@@ -25,8 +30,8 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
             {
                 Id = 1,
                 CategoryId = 1, // Roman
+                AuthorId = 1,
                 Title = "Suç ve Ceza",
-                Author = "Fyodor Dostoyevski",
                 ISBN = "9789750719387",
                 Price = 49.99m,
                 StockQuantity = 50,
@@ -36,8 +41,8 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
             {
                 Id = 2,
                 CategoryId = 2, // Bilim Kurgu
+                AuthorId = 2,
                 Title = "Dune",
-                Author = "Frank Herbert",
                 ISBN = "9789753421851",
                 Price = 59.99m,
                 StockQuantity = 30,
@@ -46,9 +51,9 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
             new Book
             {
                 Id = 3,
-                CategoryId = 3, // Tarih
+                CategoryId = 3,
+                AuthorId = 3,
                 Title = "Nutuk",
-                Author = "Mustafa Kemal Atatürk",
                 ISBN = "9789944885348",
                 Price = 69.99m,
                 StockQuantity = 40,
